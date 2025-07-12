@@ -1,205 +1,124 @@
-import { useState } from 'react'
-import { Sparkles, Target, TrendingUp, Users } from 'lucide-react'
-import ImageUploadArea from '@/components/ImageUploadArea'
-import AnalysisResults from '@/components/AnalysisResults'
-import SupplierPricing from '@/components/SupplierPricing'
-import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle } from '@/components/ui/glass-card'
-import { Badge } from '@/components/ui/badge'
-
-// Mock data for demonstration
-const mockAnalysis = {
-  style: "Scandinavian",
-  totalSavings: 850,
-  suggestions: [
-    {
-      part: "Table Top",
-      originalMaterial: "Solid Oak Wood",
-      suggestedMaterial: "Pine with Oak Veneer",
-      costSaving: 320,
-      durabilityChange: -15,
-      timeChange: 2,
-      visualImpact: 'low' as const
-    },
-    {
-      part: "Table Legs", 
-      originalMaterial: "Solid Oak",
-      suggestedMaterial: "Pine with Stain",
-      costSaving: 280,
-      durabilityChange: -20,
-      timeChange: 1,
-      visualImpact: 'medium' as const
-    },
-    {
-      part: "Hardware",
-      originalMaterial: "Brass Fittings",
-      suggestedMaterial: "Steel with Brass Finish",
-      costSaving: 250,
-      durabilityChange: -5,
-      timeChange: 0,
-      visualImpact: 'low' as const
-    }
-  ]
-}
-
-const mockSupplierData = [
-  {
-    supplier: "Builders Warehouse",
-    price: 125,
-    distance: "2.3km",
-    rating: 4.2,
-    inStock: true,
-    logo: "BW"
-  },
-  {
-    supplier: "Leroy Merlin",
-    price: 118,
-    distance: "5.1km", 
-    rating: 4.5,
-    inStock: true,
-    logo: "LM"
-  },
-  {
-    supplier: "Gelmar",
-    price: 140,
-    distance: "8.2km",
-    rating: 4.0,
-    inStock: false,
-    logo: "GM"
-  }
-]
+import { ArrowRight, ChevronDown } from 'lucide-react'
+import Navigation from '@/components/Navigation'
+import FloatingElements from '@/components/FloatingElements'
+import CompanyLogos from '@/components/CompanyLogos'
+import { Button } from '@/components/ui/button'
 
 const Index = () => {
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [showResults, setShowResults] = useState(false)
-
-  const handleImageUpload = (file: File) => {
-    setUploadedFile(file)
-    setIsAnalyzing(true)
-    
-    // Simulate AI analysis
-    setTimeout(() => {
-      setIsAnalyzing(false)
-      setShowResults(true)
-    }, 3000)
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-2 mb-6">
-              <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                FurniCraft AI
-              </h1>
-            </div>
-            
-            <h2 className="text-4xl md:text-6xl font-bold mb-6">
-              Your furniture dreams,{' '}
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
-                simplified
-              </span>
-            </h2>
-            
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Transform Pinterest inspiration into affordable South African builds. 
-              Get AI-powered material analysis, cost optimization, and local supplier pricing.
-            </p>
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Navigation */}
+      <Navigation />
 
-            <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
-              <Badge className="bg-secondary/70 text-secondary-foreground backdrop-blur-sm">
-                <Target className="w-4 h-4 mr-1" />
-                50,000+ furniture makers
-              </Badge>
-              <Badge className="bg-secondary/70 text-secondary-foreground backdrop-blur-sm">
-                <TrendingUp className="w-4 h-4 mr-1" />
-                Average 40% cost savings
-              </Badge>
-              <Badge className="bg-secondary/70 text-secondary-foreground backdrop-blur-sm">
-                <Users className="w-4 h-4 mr-1" />
-                Trusted by SA makers
-              </Badge>
-            </div>
+      {/* Hero Section */}
+      <div className="relative min-h-screen flex items-center justify-center">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-hero"></div>
+        
+        {/* Grid pattern overlay */}
+        <div 
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)`,
+            backgroundSize: '20px 20px'
+          }}
+        ></div>
+
+        {/* Floating elements */}
+        <FloatingElements />
+
+        {/* Main content */}
+        <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+            One-click for Furniture{' '}
+            <span className="text-muted-foreground">Optimization</span>
+          </h1>
+          
+          <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
+            Dive into the art of furniture making, where innovative AI technology meets South African craftsmanship
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+            <Button className="px-8 py-3 text-base">
+              Open App
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            <Button variant="outline" className="px-8 py-3 text-base">
+              Discover More
+            </Button>
           </div>
 
-          {/* Main Content */}
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Upload Area */}
-            <div className="lg:col-span-2">
-              <ImageUploadArea 
-                onImageUpload={handleImageUpload}
-                isAnalyzing={isAnalyzing}
-              />
-              
-              {showResults && (
-                <div className="mt-8">
-                  <AnalysisResults analysis={mockAnalysis} />
-                </div>
-              )}
+          {/* Scroll indicator */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+            <div className="flex flex-col items-center text-muted-foreground">
+              <span className="text-sm mb-2">Scroll down</span>
+              <ChevronDown className="w-4 h-4 animate-bounce" />
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom section indicator */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <div className="max-w-7xl mx-auto px-4 pb-8">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <div className="flex items-center gap-4">
+                <span>02/03</span>
+                <span>Scroll down</span>
+              </div>
+              <div>
+                <span>FurniCraft horizons</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Company logos section */}
+      <div className="py-16 border-t border-border">
+        <div className="max-w-7xl mx-auto px-4">
+          <CompanyLogos />
+        </div>
+      </div>
+
+      {/* Features section */}
+      <div className="py-24">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              Three simple steps to{' '}
+              <span className="text-muted-foreground">organized builds</span>
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-card border border-border flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold">1</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Upload & Analyze</h3>
+              <p className="text-muted-foreground">
+                Upload your Pinterest inspiration and let AI break down materials, costs, and alternatives
+              </p>
             </div>
 
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* How it works */}
-              <GlassCard>
-                <GlassCardHeader>
-                  <GlassCardTitle className="text-lg">How it works</GlassCardTitle>
-                </GlassCardHeader>
-                <GlassCardContent className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold text-primary-foreground">
-                      1
-                    </div>
-                    <div>
-                      <h4 className="font-medium mb-1">Upload Image</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Drop your Pinterest furniture inspiration
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold text-primary-foreground">
-                      2
-                    </div>
-                    <div>
-                      <h4 className="font-medium mb-1">AI Analysis</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Get material breakdown and alternatives
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold text-primary-foreground">
-                      3
-                    </div>
-                    <div>
-                      <h4 className="font-medium mb-1">Build Smarter</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Save money with local supplier pricing
-                      </p>
-                    </div>
-                  </div>
-                </GlassCardContent>
-              </GlassCard>
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-card border border-border flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold">2</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Compare Options</h3>
+              <p className="text-muted-foreground">
+                View cost-effective alternatives with trade-offs in durability, time, and visual impact
+              </p>
+            </div>
 
-              {/* Supplier Pricing */}
-              {showResults && (
-                <SupplierPricing 
-                  material="18mm Pine Board"
-                  prices={mockSupplierData}
-                />
-              )}
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-card border border-border flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold">3</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Build Smarter</h3>
+              <p className="text-muted-foreground">
+                Get real-time pricing from local SA suppliers and optimize your material purchases
+              </p>
             </div>
           </div>
         </div>

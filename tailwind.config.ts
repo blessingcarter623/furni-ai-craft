@@ -64,15 +64,14 @@ export default {
 				}
 			},
 			backgroundImage: {
-				'gradient-primary': 'var(--gradient-primary)',
-				'gradient-secondary': 'var(--gradient-secondary)',
+				'gradient-hero': 'var(--gradient-hero)',
+				'gradient-card': 'var(--gradient-card)',
 			},
 			backdropBlur: {
 				'glass': '12px',
 			},
 			boxShadow: {
-				'glow': 'var(--shadow-glow)',
-				'card': 'var(--shadow-card)',
+				'subtle': 'var(--shadow-subtle)',
 			},
 			transitionTimingFunction: {
 				'smooth': 'var(--transition-smooth)',

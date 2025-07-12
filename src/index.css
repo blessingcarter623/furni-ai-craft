@@ -8,43 +8,42 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 220 13% 9%;
-    --foreground: 220 13% 91%;
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
 
-    --card: 220 13% 12%;
-    --card-foreground: 220 13% 91%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 220 13% 12%;
-    --popover-foreground: 220 13% 91%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 280 100% 70%;
-    --primary-foreground: 220 13% 9%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
 
-    --secondary: 220 13% 16%;
-    --secondary-foreground: 220 13% 91%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 220 13% 16%;
-    --muted-foreground: 220 9% 55%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
 
-    --accent: 280 100% 70%;
-    --accent-foreground: 220 13% 9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 220 13% 91%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 220 13% 20%;
-    --input: 220 13% 16%;
-    --ring: 280 100% 70%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
 
     --radius: 0.75rem;
     
     /* Custom design tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(280 100% 70%), hsl(320 100% 60%));
-    --gradient-secondary: linear-gradient(135deg, hsl(220 13% 16%), hsl(220 13% 20%));
-    --glass-bg: hsla(220, 13%, 16%, 0.7);
-    --glass-border: hsla(220, 13%, 30%, 0.3);
-    --shadow-glow: 0 0 40px hsla(280, 100%, 70%, 0.3);
-    --shadow-card: 0 8px 32px hsla(220, 13%, 0%, 0.3);
+    --gradient-hero: radial-gradient(ellipse 80% 80% at 50% 40%, hsla(0, 0%, 100%, 0.12), transparent);
+    --gradient-card: linear-gradient(135deg, hsla(0, 0%, 100%, 0.1), hsla(0, 0%, 100%, 0.05));
+    --glass-bg: hsla(0, 0%, 10%, 0.8);
+    --glass-border: hsla(0, 0%, 100%, 0.1);
+    --shadow-subtle: 0 4px 24px hsla(0, 0%, 0%, 0.25);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --sidebar-background: 0 0% 98%;
