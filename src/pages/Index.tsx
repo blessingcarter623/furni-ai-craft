@@ -1,10 +1,37 @@
-import { ArrowRight, ChevronDown } from 'lucide-react'
+import { ArrowRight, ChevronDown, X } from 'lucide-react'
+import { useState } from 'react'
 import Navigation from '@/components/Navigation'
 import FloatingElements from '@/components/FloatingElements'
 import CompanyLogos from '@/components/CompanyLogos'
+import ImageUploadArea from '@/components/ImageUploadArea'
+import AnalysisResults from '@/components/AnalysisResults'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { useFurnitureAnalysis } from '@/hooks/useFurnitureAnalysis'
 
 const Index = () => {
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const [currentDesign, setCurrentDesign] = useState<any>(null)
+  const [analysisData, setAnalysisData] = useState<{ analysis: any; materials: any[] } | null>(null)
+  const { getAnalysisResults } = useFurnitureAnalysis()
+
+  const handleUploadSuccess = async (design: any) => {
+    setCurrentDesign(design)
+    // Poll for analysis results
+    const pollForResults = async () => {
+      try {
+        const results = await getAnalysisResults(design.id)
+        setAnalysisData(results)
+      } catch (error) {
+        // Analysis might not be ready yet, poll again
+        setTimeout(pollForResults, 2000)
+      }
+    }
+    
+    // Start polling after a short delay
+    setTimeout(pollForResults, 3000)
+  }
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Navigation */}
@@ -39,12 +66,12 @@ const Index = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Button className="px-8 py-3 text-base">
+            <Button 
+              className="px-8 py-3 text-base bg-gradient-primary hover:opacity-90 shadow-glow"
+              onClick={() => setIsUploadModalOpen(true)}
+            >
               Open App
               <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-            <Button variant="outline" className="px-8 py-3 text-base">
-              Discover More
             </Button>
           </div>
 
@@ -123,6 +150,81 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* Upload Modal */}
+      <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-xl border border-border/30">
+          <DialogHeader className="relative">
+            <div className="absolute inset-0 bg-gradient-hero opacity-20 rounded-t-lg"></div>
+            <div className="relative">
+              <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+                Upload Your Furniture Design ✨
+              </DialogTitle>
+              <p className="text-muted-foreground text-center mt-2">
+                Let AI analyze your inspiration and create an affordable build plan
+              </p>
+            </div>
+          </DialogHeader>
+          
+          <div className="relative">
+            {/* Background effects similar to hero */}
+            <div className="absolute inset-0 bg-gradient-primary opacity-5 blur-xl rounded-lg"></div>
+            
+            <div className="relative space-y-6">
+              {!currentDesign && (
+                <ImageUploadArea onUploadSuccess={handleUploadSuccess} />
+              )}
+              
+              {currentDesign && !analysisData && (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-gradient-primary flex items-center justify-center mb-4 animate-pulse">
+                    <ArrowRight className="w-8 h-8 text-primary-foreground" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Analysis in Progress</h3>
+                  <p className="text-muted-foreground">
+                    Our AI is analyzing your design. This usually takes 30-60 seconds...
+                  </p>
+                </div>
+              )}
+              
+              {analysisData && (
+                <div className="space-y-6">
+                  <div className="text-center py-6 border-b border-border/30">
+                    <h3 className="text-xl font-semibold text-green-400 mb-2">
+                      Analysis Complete! 🎉
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Here's your detailed build plan with materials and costs
+                    </p>
+                  </div>
+                  <AnalysisResults 
+                    analysis={analysisData.analysis} 
+                    materials={analysisData.materials}
+                  />
+                  <div className="flex gap-3 pt-6 border-t border-border/30">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => {
+                        setCurrentDesign(null)
+                        setAnalysisData(null)
+                      }}
+                    >
+                      Analyze Another Design
+                    </Button>
+                    <Button 
+                      className="flex-1 bg-gradient-primary"
+                      onClick={() => setIsUploadModalOpen(false)}
+                    >
+                      Save Results
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
