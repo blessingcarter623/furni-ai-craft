@@ -48,12 +48,19 @@ export default function ImageUploadArea({ onImageUpload, isAnalyzing = false }: 
   }
 
   return (
-    <GlassCard className="relative overflow-hidden">
+    <GlassCard className="relative overflow-hidden shadow-elegant">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-hero opacity-30"></div>
+      
+      {/* Glow effect */}
+      <div className="absolute inset-0 bg-gradient-primary opacity-10 blur-xl"></div>
+      
       <div
         className={`
           relative min-h-[300px] flex flex-col items-center justify-center p-8 
-          border-2 border-dashed transition-all duration-300 rounded-lg
-          ${dragActive ? 'border-primary bg-primary/5' : 'border-border/50'}
+          border-2 border-dashed transition-all duration-500 rounded-lg
+          animate-[bounce_3s_ease-in-out_infinite]
+          ${dragActive ? 'border-primary bg-primary/10 shadow-glow scale-105' : 'border-border/30'}
           ${uploadedImage ? 'min-h-[400px]' : ''}
         `}
         onDragEnter={handleDrag}
@@ -89,23 +96,25 @@ export default function ImageUploadArea({ onImageUpload, isAnalyzing = false }: 
             </Button>
           </div>
         ) : (
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-gradient-primary flex items-center justify-center">
-              <Upload className="w-8 h-8 text-primary-foreground" />
+          <div className="text-center space-y-6 relative z-10">
+            <div className="w-20 h-20 mx-auto rounded-full bg-gradient-primary flex items-center justify-center shadow-glow animate-pulse">
+              <Upload className="w-10 h-10 text-primary-foreground" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold mb-2">Upload Furniture Image</h3>
-              <p className="text-muted-foreground mb-4">
-                Drop a Pinterest-inspired furniture image here or click to browse
+              <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+                Drop Your Dream Design! 🎨
+              </h3>
+              <p className="text-muted-foreground mb-6 text-lg leading-relaxed">
+                Share your Pinterest inspiration and watch our AI transform it into an <span className="text-primary font-semibold">affordable reality</span>
               </p>
             </div>
             <div className="flex items-center gap-4">
               <Button 
-                className="bg-gradient-primary hover:opacity-90"
+                className="bg-gradient-primary hover:opacity-90 hover:scale-105 transition-all duration-300 px-8 py-3 text-lg shadow-glow"
                 onClick={() => document.getElementById('file-input')?.click()}
               >
-                <Image className="w-4 h-4 mr-2" />
-                Choose Image
+                <Image className="w-5 h-5 mr-2" />
+                Choose Image ✨
               </Button>
             </div>
           </div>

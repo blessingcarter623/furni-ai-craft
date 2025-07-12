@@ -30,8 +30,8 @@ const Index = () => {
         {/* Main content */}
         <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            One-click for Furniture{' '}
-            <span className="text-muted-foreground">Optimization</span>
+            Upload the design.{' '}
+            <span className="text-muted-foreground">We build it for less🔥</span>
           </h1>
           
           <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
