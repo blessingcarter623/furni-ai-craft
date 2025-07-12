@@ -1,17 +1,29 @@
 import { ArrowRight, ChevronDown } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Navigation from '@/components/Navigation'
 import FloatingElements from '@/components/FloatingElements'
 import CompanyLogos from '@/components/CompanyLogos'
 import ImageUploadArea from '@/components/ImageUploadArea'
 import AnalysisResults from '@/components/AnalysisResults'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/hooks/useAuth'
 import { useFurnitureAnalysis } from '@/hooks/useFurnitureAnalysis'
 
 const Index = () => {
   const [currentDesign, setCurrentDesign] = useState<any>(null)
   const [analysisData, setAnalysisData] = useState<{ analysis: any; materials: any[] } | null>(null)
+  const { user, loading: authLoading } = useAuth()
   const { getAnalysisResults } = useFurnitureAnalysis()
+  const navigate = useNavigate()
+
+  const handleOpenApp = () => {
+    if (!user) {
+      navigate('/auth')
+      return
+    }
+    document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   const handleUploadSuccess = async (design: any) => {
     setCurrentDesign(design)
@@ -66,9 +78,9 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <Button 
               className="px-8 py-3 text-base bg-gradient-primary hover:opacity-90 shadow-glow"
-              onClick={() => document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={handleOpenApp}
             >
-              Open App
+              {user ? 'Start Analysis' : 'Get Started'}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
@@ -146,11 +158,28 @@ const Index = () => {
             <div className="absolute -inset-2 bg-gradient-primary opacity-10 blur-xl rounded-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
             
             <div className="relative">
-              {!currentDesign && (
+              {!user ? (
+                <div className="text-center py-20 border-2 border-dashed border-primary/30 rounded-2xl bg-card/50 backdrop-blur-sm animate-fade-in" style={{ animationDelay: '0.4s' }}>
+                  <div className="w-20 h-20 mx-auto rounded-full bg-gradient-primary flex items-center justify-center mb-6 shadow-glow">
+                    <ArrowRight className="w-10 h-10 text-primary-foreground" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4">Sign In Required</h3>
+                  <p className="text-muted-foreground text-lg mb-6">
+                    Please sign in to start analyzing your furniture designs
+                  </p>
+                  <Button 
+                    onClick={() => navigate('/auth')}
+                    className="bg-gradient-primary hover:opacity-90 shadow-glow"
+                  >
+                    Sign In to Continue
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              ) : !currentDesign ? (
                 <div className="transform hover:scale-[1.02] transition-all duration-500 animate-fade-in" style={{ animationDelay: '0.4s' }}>
                   <ImageUploadArea onUploadSuccess={handleUploadSuccess} />
                 </div>
-              )}
+              ) : null}
               
               {currentDesign && !analysisData && (
                 <div className="text-center py-20 border-2 border-dashed border-primary/50 rounded-2xl bg-card/70 backdrop-blur-sm relative overflow-hidden animate-scale-in">
