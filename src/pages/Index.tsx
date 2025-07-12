@@ -1,4 +1,4 @@
-import { ArrowRight, ChevronDown, X } from 'lucide-react'
+import { ArrowRight, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import Navigation from '@/components/Navigation'
 import FloatingElements from '@/components/FloatingElements'
@@ -6,11 +6,9 @@ import CompanyLogos from '@/components/CompanyLogos'
 import ImageUploadArea from '@/components/ImageUploadArea'
 import AnalysisResults from '@/components/AnalysisResults'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useFurnitureAnalysis } from '@/hooks/useFurnitureAnalysis'
 
 const Index = () => {
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [currentDesign, setCurrentDesign] = useState<any>(null)
   const [analysisData, setAnalysisData] = useState<{ analysis: any; materials: any[] } | null>(null)
   const { getAnalysisResults } = useFurnitureAnalysis()
@@ -68,7 +66,7 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <Button 
               className="px-8 py-3 text-base bg-gradient-primary hover:opacity-90 shadow-glow"
-              onClick={() => setIsUploadModalOpen(true)}
+              onClick={() => document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth' })}
             >
               Open App
               <ArrowRight className="w-4 h-4 ml-2" />
@@ -151,37 +149,36 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Upload Modal */}
-      <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-xl border border-border/30">
-          <DialogHeader className="relative">
-            <div className="absolute inset-0 bg-gradient-hero opacity-20 rounded-t-lg"></div>
-            <div className="relative">
-              <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-                Upload Your Furniture Design ✨
-              </DialogTitle>
-              <p className="text-muted-foreground text-center mt-2">
-                Let AI analyze your inspiration and create an affordable build plan
-              </p>
-            </div>
-          </DialogHeader>
-          
-          <div className="relative">
-            {/* Background effects similar to hero */}
-            <div className="absolute inset-0 bg-gradient-primary opacity-5 blur-xl rounded-lg"></div>
-            
-            <div className="relative space-y-6">
+      {/* Upload Section */}
+      <div id="upload-section" className="py-24 bg-background relative">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-hero opacity-10"></div>
+        
+        <div className="max-w-6xl mx-auto px-4 relative">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              Start Your{' '}
+              <span className="text-primary bg-gradient-primary bg-clip-text text-transparent">AI Analysis</span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Upload your furniture inspiration and get instant cost breakdowns, material lists, and build plans
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* Upload Area */}
+            <div className="space-y-6">
               {!currentDesign && (
                 <ImageUploadArea onUploadSuccess={handleUploadSuccess} />
               )}
               
               {currentDesign && !analysisData && (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 mx-auto rounded-full bg-gradient-primary flex items-center justify-center mb-4 animate-pulse">
-                    <ArrowRight className="w-8 h-8 text-primary-foreground" />
+                <div className="text-center py-12 border-2 border-dashed border-primary/30 rounded-lg bg-card/50">
+                  <div className="w-20 h-20 mx-auto rounded-full bg-gradient-primary flex items-center justify-center mb-6 animate-pulse">
+                    <ArrowRight className="w-10 h-10 text-primary-foreground" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">Analysis in Progress</h3>
-                  <p className="text-muted-foreground">
+                  <h3 className="text-2xl font-semibold mb-3">Analysis in Progress</h3>
+                  <p className="text-muted-foreground text-lg">
                     Our AI is analyzing your design. This usually takes 30-60 seconds...
                   </p>
                 </div>
@@ -189,42 +186,88 @@ const Index = () => {
               
               {analysisData && (
                 <div className="space-y-6">
-                  <div className="text-center py-6 border-b border-border/30">
-                    <h3 className="text-xl font-semibold text-green-400 mb-2">
+                  <div className="text-center py-6 border-2 border-green-500/30 rounded-lg bg-green-500/10">
+                    <h3 className="text-2xl font-semibold text-green-400 mb-2">
                       Analysis Complete! 🎉
                     </h3>
                     <p className="text-muted-foreground">
                       Here's your detailed build plan with materials and costs
                     </p>
                   </div>
-                  <AnalysisResults 
-                    analysis={analysisData.analysis} 
-                    materials={analysisData.materials}
-                  />
-                  <div className="flex gap-3 pt-6 border-t border-border/30">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => {
-                        setCurrentDesign(null)
-                        setAnalysisData(null)
-                      }}
-                    >
-                      Analyze Another Design
-                    </Button>
-                    <Button 
-                      className="flex-1 bg-gradient-primary"
-                      onClick={() => setIsUploadModalOpen(false)}
-                    >
-                      Save Results
-                    </Button>
-                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => {
+                      setCurrentDesign(null)
+                      setAnalysisData(null)
+                    }}
+                  >
+                    Analyze Another Design
+                  </Button>
                 </div>
               )}
             </div>
+
+            {/* Inspiration Gallery */}
+            <div className="space-y-6">
+              <h3 className="text-2xl font-semibold text-center">Design Inspiration</h3>
+              <p className="text-muted-foreground text-center">
+                Get inspired by these furniture designs that our AI can analyze
+              </p>
+              
+              <div className="grid grid-cols-1 gap-6">
+                <div className="group relative overflow-hidden rounded-lg bg-card border border-border/30 hover:border-primary/50 transition-all duration-300">
+                  <img 
+                    src="/lovable-uploads/4eb91d33-5355-433e-b92e-10a6479c04dc.png" 
+                    alt="Modern minimalist sofa with wooden base"
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="p-4">
+                    <h4 className="font-semibold mb-2">Modern Platform Sofa</h4>
+                    <p className="text-sm text-muted-foreground">Minimalist design with wooden platform base</p>
+                  </div>
+                </div>
+
+                <div className="group relative overflow-hidden rounded-lg bg-card border border-border/30 hover:border-primary/50 transition-all duration-300">
+                  <img 
+                    src="/lovable-uploads/d245d191-64bf-4352-8e4f-b3051298eba6.png" 
+                    alt="Contemporary sectional sofa"
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="p-4">
+                    <h4 className="font-semibold mb-2">Contemporary Sectional</h4>
+                    <p className="text-sm text-muted-foreground">Modular design with clean lines</p>
+                  </div>
+                </div>
+
+                <div className="group relative overflow-hidden rounded-lg bg-card border border-border/30 hover:border-primary/50 transition-all duration-300">
+                  <img 
+                    src="/lovable-uploads/c6c76e81-7a6b-4c4b-a99d-60f7ba736ae1.png" 
+                    alt="Industrial lounge chair"
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="p-4">
+                    <h4 className="font-semibold mb-2">Industrial Lounge Chair</h4>
+                    <p className="text-sm text-muted-foreground">Metal frame with upholstered cushioning</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </div>
+
+      {/* Analysis Results Section */}
+      {analysisData && (
+        <div className="py-24 bg-card/30">
+          <div className="max-w-6xl mx-auto px-4">
+            <AnalysisResults 
+              analysis={analysisData.analysis} 
+              materials={analysisData.materials}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
