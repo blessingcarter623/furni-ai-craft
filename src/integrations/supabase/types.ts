@@ -14,7 +14,186 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      analysis_results: {
+        Row: {
+          ai_description: string | null
+          created_at: string
+          design_id: string
+          difficulty_level: string | null
+          estimated_cost_max: number | null
+          estimated_cost_min: number | null
+          estimated_time_hours: number | null
+          id: string
+          raw_ai_response: Json | null
+          style_category: string | null
+        }
+        Insert: {
+          ai_description?: string | null
+          created_at?: string
+          design_id: string
+          difficulty_level?: string | null
+          estimated_cost_max?: number | null
+          estimated_cost_min?: number | null
+          estimated_time_hours?: number | null
+          id?: string
+          raw_ai_response?: Json | null
+          style_category?: string | null
+        }
+        Update: {
+          ai_description?: string | null
+          created_at?: string
+          design_id?: string
+          difficulty_level?: string | null
+          estimated_cost_max?: number | null
+          estimated_cost_min?: number | null
+          estimated_time_hours?: number | null
+          id?: string
+          raw_ai_response?: Json | null
+          style_category?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analysis_results_design_id_fkey"
+            columns: ["design_id"]
+            isOneToOne: false
+            referencedRelation: "furniture_designs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      furniture_designs: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string
+          original_filename: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url: string
+          original_filename?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string
+          original_filename?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      materials: {
+        Row: {
+          analysis_id: string
+          category: string
+          created_at: string
+          estimated_cost: number | null
+          id: string
+          name: string
+          notes: string | null
+          priority: string
+          quantity: number | null
+          unit: string
+        }
+        Insert: {
+          analysis_id: string
+          category: string
+          created_at?: string
+          estimated_cost?: number | null
+          id?: string
+          name: string
+          notes?: string | null
+          priority?: string
+          quantity?: number | null
+          unit: string
+        }
+        Update: {
+          analysis_id?: string
+          category?: string
+          created_at?: string
+          estimated_cost?: number | null
+          id?: string
+          name?: string
+          notes?: string | null
+          priority?: string
+          quantity?: number | null
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_analysis_id_fkey"
+            columns: ["analysis_id"]
+            isOneToOne: false
+            referencedRelation: "analysis_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_pricing: {
+        Row: {
+          contact_info: Json | null
+          created_at: string
+          delivery_time_days: number | null
+          id: string
+          is_available: boolean
+          location: string | null
+          material_id: string
+          price: number
+          quality_rating: number | null
+          supplier_name: string
+          updated_at: string
+        }
+        Insert: {
+          contact_info?: Json | null
+          created_at?: string
+          delivery_time_days?: number | null
+          id?: string
+          is_available?: boolean
+          location?: string | null
+          material_id: string
+          price: number
+          quality_rating?: number | null
+          supplier_name: string
+          updated_at?: string
+        }
+        Update: {
+          contact_info?: Json | null
+          created_at?: string
+          delivery_time_days?: number | null
+          id?: string
+          is_available?: boolean
+          location?: string | null
+          material_id?: string
+          price?: number
+          quality_rating?: number | null
+          supplier_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_pricing_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

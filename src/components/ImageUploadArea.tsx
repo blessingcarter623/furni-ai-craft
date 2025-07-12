@@ -2,15 +2,22 @@ import { useState, useCallback } from 'react'
 import { Upload, Image, Sparkles } from 'lucide-react'
 import { GlassCard } from '@/components/ui/glass-card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { useFurnitureAnalysis } from '@/hooks/useFurnitureAnalysis'
 
 interface ImageUploadAreaProps {
-  onImageUpload: (file: File) => void
-  isAnalyzing?: boolean
+  onUploadSuccess?: (design: any) => void
 }
 
-export default function ImageUploadArea({ onImageUpload, isAnalyzing = false }: ImageUploadAreaProps) {
+export default function ImageUploadArea({ onUploadSuccess }: ImageUploadAreaProps) {
   const [dragActive, setDragActive] = useState(false)
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  
+  const { uploadDesign, analyzeDesign, isUploading, isAnalyzing } = useFurnitureAnalysis()
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -29,22 +36,51 @@ export default function ImageUploadArea({ onImageUpload, isAnalyzing = false }: 
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0]
-      handleFileUpload(file)
+      handleFileSelect(file)
     }
   }, [])
 
-  const handleFileUpload = (file: File) => {
+  const handleFileSelect = (file: File) => {
     if (file.type.startsWith('image/')) {
       const url = URL.createObjectURL(file)
       setUploadedImage(url)
-      onImageUpload(file)
+      setSelectedFile(file)
     }
   }
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      handleFileUpload(e.target.files[0])
+      handleFileSelect(e.target.files[0])
     }
+  }
+
+  const handleAnalyze = async () => {
+    if (!selectedFile || !title.trim()) return
+    
+    try {
+      const design = await uploadDesign(selectedFile, title, description)
+      await analyzeDesign(design.id, design.image_url)
+      onUploadSuccess?.(design)
+      
+      // Reset form after successful upload
+      setUploadedImage(null)
+      setSelectedFile(null)
+      setTitle('')
+      setDescription('')
+      const input = document.getElementById('file-input') as HTMLInputElement
+      if (input) input.value = ''
+    } catch (error) {
+      console.error('Analysis failed:', error)
+    }
+  }
+
+  const resetForm = () => {
+    setUploadedImage(null)
+    setSelectedFile(null)
+    setTitle('')
+    setDescription('')
+    const input = document.getElementById('file-input') as HTMLInputElement
+    if (input) input.value = ''
   }
 
   return (
@@ -59,9 +95,8 @@ export default function ImageUploadArea({ onImageUpload, isAnalyzing = false }: 
         className={`
           relative min-h-[300px] flex flex-col items-center justify-center p-8 
           border-2 border-dashed transition-all duration-500 rounded-lg
-          animate-[bounce_3s_ease-in-out_infinite]
           ${dragActive ? 'border-primary bg-primary/10 shadow-glow scale-105' : 'border-border/30'}
-          ${uploadedImage ? 'min-h-[400px]' : ''}
+          ${uploadedImage ? 'min-h-[500px]' : ''}
         `}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -69,31 +104,65 @@ export default function ImageUploadArea({ onImageUpload, isAnalyzing = false }: 
         onDrop={handleDrop}
       >
         {uploadedImage ? (
-          <div className="relative w-full h-full flex flex-col items-center">
-            <img 
-              src={uploadedImage} 
-              alt="Uploaded furniture" 
-              className="max-h-[300px] w-auto object-contain rounded-lg shadow-glow"
-            />
-            {isAnalyzing && (
-              <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center rounded-lg">
-                <div className="flex items-center gap-3 text-primary">
-                  <Sparkles className="w-6 h-6 animate-pulse" />
-                  <span className="text-lg font-medium">Analyzing furniture...</span>
+          <div className="relative w-full space-y-6 max-w-lg">
+            <div className="text-center">
+              <img 
+                src={uploadedImage} 
+                alt="Uploaded furniture" 
+                className="max-h-[200px] w-auto object-contain rounded-lg shadow-glow mx-auto"
+              />
+              {(isUploading || isAnalyzing) && (
+                <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center rounded-lg">
+                  <div className="flex items-center gap-3 text-primary">
+                    <Sparkles className="w-6 h-6 animate-pulse" />
+                    <span className="text-lg font-medium">
+                      {isUploading ? 'Uploading...' : 'Analyzing furniture...'}
+                    </span>
+                  </div>
                 </div>
+              )}
+            </div>
+            
+            <div className="space-y-4 relative z-10">
+              <div>
+                <Input
+                  placeholder="Give your design a name..."
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="bg-background/80 backdrop-blur-sm border-border/50"
+                  disabled={isUploading || isAnalyzing}
+                />
               </div>
-            )}
-            <Button 
-              variant="outline" 
-              className="mt-4 bg-background/50 backdrop-blur-sm"
-              onClick={() => {
-                setUploadedImage(null)
-                const input = document.getElementById('file-input') as HTMLInputElement
-                if (input) input.value = ''
-              }}
-            >
-              Upload Different Image
-            </Button>
+              <div>
+                <Textarea
+                  placeholder="Add any notes or details about your design (optional)"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="bg-background/80 backdrop-blur-sm border-border/50 resize-none"
+                  rows={3}
+                  disabled={isUploading || isAnalyzing}
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <Button 
+                  onClick={handleAnalyze}
+                  disabled={!title.trim() || isUploading || isAnalyzing}
+                  className="flex-1 bg-gradient-primary hover:opacity-90 shadow-glow"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Analyze Design ✨
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="bg-background/50 backdrop-blur-sm"
+                  onClick={resetForm}
+                  disabled={isUploading || isAnalyzing}
+                >
+                  Reset
+                </Button>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="text-center space-y-6 relative z-10">
