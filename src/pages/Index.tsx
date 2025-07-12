@@ -68,7 +68,7 @@ const Index = () => {
         <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
             Upload the design.{' '}
-            <span className="text-muted-foreground">We build it for less🔥</span>
+            <span className="text-muted-foreground">We build it for less</span>
           </h1>
           
           <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
