@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const flowiseApiUrl = Deno.env.get('FLOWISE_API_URL') || 'http://localhost:3000';
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -31,70 +31,47 @@ serve(async (req) => {
       .update({ status: 'analyzing' })
       .eq('id', designId);
 
-    // Analyze image with OpenAI Vision
-    const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Analyze image with Flowise AI
+    const analysisResponse = await fetch(`${flowiseApiUrl}/api/v1/prediction/6680b0bb-b90f-4b6a-91db-50c7e97f8fb8`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a professional furniture analyst and craftsman. Analyze furniture images and provide detailed breakdowns for DIY builders. 
-
-Your response must be a valid JSON object with this exact structure:
-{
-  "description": "Detailed description of the furniture piece",
-  "style_category": "modern/traditional/rustic/industrial/etc",
-  "difficulty_level": "beginner/intermediate/advanced",
-  "estimated_time_hours": number,
-  "estimated_cost_min": number,
-  "estimated_cost_max": number,
-  "materials": [
-    {
-      "name": "material name",
-      "category": "wood/hardware/upholstery/finish/etc",
-      "quantity": number,
-      "unit": "pieces/meters/liters/etc",
-      "estimated_cost": number,
-      "priority": "required/optional/alternative",
-      "notes": "specific details or alternatives"
-    }
-  ]
-}
-
-Focus on South African suppliers and costs in ZAR. Be specific about wood types, hardware, and finishing materials.`
-          },
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Please analyze this furniture design and provide a complete material breakdown with costs.'
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: imageUrl
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.3
+        question: `Please analyze this furniture design image and provide a complete material breakdown with costs in South African Rand (ZAR). Focus on South African suppliers and be specific about wood types, hardware, and finishing materials. 
+        
+        Your response must be a valid JSON object with this exact structure:
+        {
+          "description": "Detailed description of the furniture piece",
+          "style_category": "modern/traditional/rustic/industrial/etc", 
+          "difficulty_level": "beginner/intermediate/advanced",
+          "estimated_time_hours": number,
+          "estimated_cost_min": number,
+          "estimated_cost_max": number,
+          "materials": [
+            {
+              "name": "material name",
+              "category": "wood/hardware/upholstery/finish/etc",
+              "quantity": number,
+              "unit": "pieces/meters/liters/etc", 
+              "estimated_cost": number,
+              "priority": "required/optional/alternative",
+              "notes": "specific details or alternatives"
+            }
+          ]
+        }`,
+        overrideConfig: {
+          "Image URL": imageUrl
+        }
       }),
     });
 
     if (!analysisResponse.ok) {
-      throw new Error(`OpenAI API error: ${analysisResponse.statusText}`);
+      throw new Error(`Flowise API error: ${analysisResponse.statusText}`);
     }
 
     const analysisData = await analysisResponse.json();
-    const content = analysisData.choices[0].message.content;
+    const content = analysisData.text || analysisData.answer || analysisData;
     
     let parsedAnalysis;
     try {
