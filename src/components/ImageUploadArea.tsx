@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react'
 import { Upload, Image, Sparkles } from 'lucide-react'
 import { GlassCard } from '@/components/ui/glass-card'
@@ -59,7 +60,7 @@ export default function ImageUploadArea({ onUploadSuccess }: ImageUploadAreaProp
     
     try {
       const design = await uploadDesign(selectedFile, title, description)
-      await analyzeDesign(design.id, design.image_url)
+      await analyzeDesign(design.id, design.image_url, title, description)
       onUploadSuccess?.(design)
       
       // Reset form after successful upload

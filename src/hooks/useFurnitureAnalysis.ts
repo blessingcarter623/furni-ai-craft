@@ -1,29 +1,8 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
-// Helper function to convert image URL to base64
-const convertImageToBase64 = async (imageUrl: string): Promise<string> => {
-  try {
-    const response = await fetch(imageUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch image: ${response.statusText}`);
-    }
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        resolve(result);
-      };
-      reader.onerror = () => reject(new Error('Failed to convert image to base64'));
-      reader.readAsDataURL(blob);
-    });
-  } catch (error) {
-    console.error('Error converting image to base64:', error);
-    throw new Error('Failed to process image for analysis');
-  }
-};
+import { analyzeFurnitureImage } from '@/utils/furnitureAnalyzer';
 
 export interface FurnitureDesign {
   id: string;
@@ -123,33 +102,79 @@ export const useFurnitureAnalysis = () => {
     }
   };
 
-  const analyzeDesign = async (designId: string, imageUrl: string) => {
+  const analyzeDesign = async (designId: string, imageUrl: string, title: string, description?: string) => {
     setIsAnalyzing(true);
     try {
-      // Convert image URL to base64
-      const imageBase64 = await convertImageToBase64(imageUrl);
+      // Update design status to analyzing
+      await supabase
+        .from('furniture_designs')
+        .update({ status: 'analyzing' })
+        .eq('id', designId);
+
+      // Use frontend analysis instead of edge function
+      const analysisData = await analyzeFurnitureImage(imageUrl, title, description);
       
-      const { data, error } = await supabase.functions.invoke('analyze-furniture', {
-        body: { designId, imageBase64 }
-      });
+      // Save analysis results
+      const { data: analysisResult, error: analysisError } = await supabase
+        .from('analysis_results')
+        .insert({
+          design_id: designId,
+          ai_description: analysisData.description,
+          estimated_cost_min: analysisData.estimated_cost_min,
+          estimated_cost_max: analysisData.estimated_cost_max,
+          difficulty_level: analysisData.difficulty_level,
+          estimated_time_hours: analysisData.estimated_time_hours,
+          style_category: analysisData.style_category,
+          raw_ai_response: analysisData
+        })
+        .select()
+        .single();
 
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw new Error(error.message);
+      if (analysisError) {
+        throw new Error(`Database error: ${analysisError.message}`);
       }
 
-      if (!data) {
-        throw new Error('No response from analysis service');
+      // Save materials
+      const materialsToInsert = analysisData.materials.map((material) => ({
+        analysis_id: analysisResult.id,
+        name: material.name,
+        category: material.category,
+        quantity: material.quantity,
+        unit: material.unit,
+        estimated_cost: material.estimated_cost,
+        priority: material.priority,
+        notes: material.notes
+      }));
+
+      const { error: materialsError } = await supabase
+        .from('materials')
+        .insert(materialsToInsert);
+
+      if (materialsError) {
+        throw new Error(`Materials database error: ${materialsError.message}`);
       }
+
+      // Update design status to completed
+      await supabase
+        .from('furniture_designs')
+        .update({ status: 'completed' })
+        .eq('id', designId);
 
       toast({
-        title: "Analysis started",
-        description: "AI analysis is in progress. Results will appear shortly.",
+        title: "Analysis completed",
+        description: "Your furniture design has been analyzed successfully!",
       });
 
       return true;
     } catch (error) {
       console.error('Analysis error:', error);
+      
+      // Update design status to failed
+      await supabase
+        .from('furniture_designs')
+        .update({ status: 'failed' })
+        .eq('id', designId);
+
       toast({
         title: "Analysis failed",
         description: error instanceof Error ? error.message : "Failed to analyze design",
