@@ -17,10 +17,10 @@ serve(async (req) => {
   }
 
   try {
-    const { designId, imageUrl } = await req.json();
+    const { designId, imageBase64 } = await req.json();
 
-    if (!designId || !imageUrl) {
-      throw new Error('Design ID and image URL are required');
+    if (!designId || !imageBase64) {
+      throw new Error('Design ID and base64 image are required');
     }
 
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
@@ -61,7 +61,7 @@ serve(async (req) => {
           ]
         }`,
         overrideConfig: {
-          "Image URL": imageUrl
+          "image": imageBase64
         }
       }),
     });
@@ -137,25 +137,39 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in analyze-furniture function:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     
-    // Update design status to failed if we have designId
-    if (supabaseUrl && supabaseServiceKey) {
+    // Update design status to failed
+    let designId;
+    try {
+      const body = await req.clone().json();
+      designId = body.designId;
+    } catch (e) {
+      console.error('Failed to extract designId from request:', e);
+    }
+    
+    if (designId && supabaseUrl && supabaseServiceKey) {
       try {
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
-        const { designId } = await req.json();
-        if (designId) {
-          await supabase
-            .from('furniture_designs')
-            .update({ status: 'failed' })
-            .eq('id', designId);
-        }
+        await supabase
+          .from('furniture_designs')
+          .update({ status: 'failed' })
+          .eq('id', designId);
+        console.log('Updated design status to failed for:', designId);
       } catch (e) {
         console.error('Failed to update design status:', e);
       }
     }
 
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'An unexpected error occurred',
+        details: error.stack || 'No stack trace available'
+      }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

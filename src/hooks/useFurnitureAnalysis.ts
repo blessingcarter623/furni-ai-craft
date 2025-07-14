@@ -2,6 +2,29 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+// Helper function to convert image URL to base64
+const convertImageToBase64 = async (imageUrl: string): Promise<string> => {
+  try {
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result);
+      };
+      reader.onerror = () => reject(new Error('Failed to convert image to base64'));
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Error converting image to base64:', error);
+    throw new Error('Failed to process image for analysis');
+  }
+};
+
 export interface FurnitureDesign {
   id: string;
   title: string;
@@ -103,12 +126,20 @@ export const useFurnitureAnalysis = () => {
   const analyzeDesign = async (designId: string, imageUrl: string) => {
     setIsAnalyzing(true);
     try {
-      const { error } = await supabase.functions.invoke('analyze-furniture', {
-        body: { designId, imageUrl }
+      // Convert image URL to base64
+      const imageBase64 = await convertImageToBase64(imageUrl);
+      
+      const { data, error } = await supabase.functions.invoke('analyze-furniture', {
+        body: { designId, imageBase64 }
       });
 
       if (error) {
+        console.error('Supabase function error:', error);
         throw new Error(error.message);
+      }
+
+      if (!data) {
+        throw new Error('No response from analysis service');
       }
 
       toast({
