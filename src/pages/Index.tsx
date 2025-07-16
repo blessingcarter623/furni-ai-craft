@@ -1,20 +1,19 @@
+
 import { ArrowRight, ChevronDown } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navigation from '@/components/Navigation'
 import FloatingElements from '@/components/FloatingElements'
 import CompanyLogos from '@/components/CompanyLogos'
-import ImageUploadArea from '@/components/ImageUploadArea'
-import AnalysisResults from '@/components/AnalysisResults'
+import FlowiseImageUpload from '@/components/FlowiseImageUpload'
+import FlowiseAnalysisResults from '@/components/FlowiseAnalysisResults'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
-import { useFurnitureAnalysis } from '@/hooks/useFurnitureAnalysis'
+import { FlowiseApiResponse } from '@/types/flowise'
 
 const Index = () => {
-  const [currentDesign, setCurrentDesign] = useState<any>(null)
-  const [analysisData, setAnalysisData] = useState<{ analysis: any; materials: any[] } | null>(null)
-  const { user, loading: authLoading } = useAuth()
-  const { getAnalysisResults } = useFurnitureAnalysis()
+  const [flowiseResult, setFlowiseResult] = useState<FlowiseApiResponse | null>(null)
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   const handleOpenApp = () => {
@@ -25,21 +24,13 @@ const Index = () => {
     document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const handleUploadSuccess = async (design: any) => {
-    setCurrentDesign(design)
-    // Poll for analysis results
-    const pollForResults = async () => {
-      try {
-        const results = await getAnalysisResults(design.id)
-        setAnalysisData(results)
-      } catch (error) {
-        // Analysis might not be ready yet, poll again
-        setTimeout(pollForResults, 2000)
-      }
-    }
-    
-    // Start polling after a short delay
-    setTimeout(pollForResults, 3000)
+  const handleFlowiseAnalysisComplete = (result: FlowiseApiResponse) => {
+    console.log('Flowise analysis completed:', result)
+    setFlowiseResult(result)
+  }
+
+  const resetAnalysis = () => {
+    setFlowiseResult(null)
   }
 
   return (
@@ -68,11 +59,11 @@ const Index = () => {
         <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
             Upload the design.{' '}
-            <span className="text-muted-foreground">We build it for less</span>
+            <span className="text-muted-foreground">AI agents analyze it</span>
           </h1>
           
           <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
-            Dive into the art of furniture making, where innovative AI technology meets South African craftsmanship
+            Revolutionary multi-agent AI system that analyzes furniture images and sources materials from South African suppliers
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
@@ -80,7 +71,7 @@ const Index = () => {
               className="px-8 py-3 text-base bg-gradient-primary hover:opacity-90 shadow-glow"
               onClick={handleOpenApp}
             >
-              {user ? 'Start Analysis' : 'Get Started'}
+              {user ? 'Start AI Analysis' : 'Get Started'}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
@@ -103,7 +94,7 @@ const Index = () => {
                 <span>Scroll down</span>
               </div>
               <div>
-                <span>FurniCraft horizons</span>
+                <span>FurniCraft AI Agents</span>
               </div>
             </div>
           </div>
@@ -146,8 +137,8 @@ const Index = () => {
               </span>
             </h2>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              Upload your furniture inspiration and watch our AI transform it into an{' '}
-              <span className="text-primary font-semibold">affordable reality</span> with detailed build plans
+              Upload your furniture inspiration and watch our{' '}
+              <span className="text-primary font-semibold">multi-agent AI system</span> analyze and source materials from South African suppliers
             </p>
           </div>
 
@@ -165,7 +156,7 @@ const Index = () => {
                   </div>
                   <h3 className="text-2xl font-bold mb-4">Sign In Required</h3>
                   <p className="text-muted-foreground text-lg mb-6">
-                    Please sign in to start analyzing your furniture designs
+                    Please sign in to start analyzing your furniture designs with AI agents
                   </p>
                   <Button 
                     onClick={() => navigate('/auth')}
@@ -175,41 +166,11 @@ const Index = () => {
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
-              ) : !currentDesign ? (
+              ) : !flowiseResult ? (
                 <div className="transform hover:scale-[1.02] transition-all duration-500 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-                  <ImageUploadArea onUploadSuccess={handleUploadSuccess} />
+                  <FlowiseImageUpload onAnalysisComplete={handleFlowiseAnalysisComplete} />
                 </div>
-              ) : null}
-              
-              {currentDesign && !analysisData && (
-                <div className="text-center py-20 border-2 border-dashed border-primary/50 rounded-2xl bg-card/70 backdrop-blur-sm relative overflow-hidden animate-scale-in">
-                  {/* Animated background */}
-                  <div className="absolute inset-0 bg-gradient-primary opacity-5 animate-pulse"></div>
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse"></div>
-                  
-                  <div className="relative z-10">
-                    <div className="w-28 h-28 mx-auto rounded-full bg-gradient-primary flex items-center justify-center mb-8 shadow-glow animate-spin-slow">
-                      <ArrowRight className="w-14 h-14 text-primary-foreground animate-pulse" />
-                    </div>
-                    <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                      AI Analysis in Progress ✨
-                    </h3>
-                    <p className="text-muted-foreground text-xl max-w-lg mx-auto">
-                      Our advanced AI is analyzing your design, breaking down materials, calculating costs, and creating your custom build plan...
-                    </p>
-                    
-                    {/* Progress indicator */}
-                    <div className="mt-8 max-w-xs mx-auto">
-                      <div className="h-2 bg-border rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-primary animate-pulse w-2/3 rounded-full"></div>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-2">Usually takes 30-60 seconds</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {analysisData && (
+              ) : (
                 <div className="space-y-8 animate-scale-in">
                   <div className="text-center py-12 border-2 border-green-500/40 rounded-2xl bg-green-500/10 backdrop-blur-sm relative overflow-hidden">
                     {/* Success animation background */}
@@ -220,10 +181,10 @@ const Index = () => {
                         <ArrowRight className="w-10 h-10 text-white" />
                       </div>
                       <h3 className="text-3xl font-bold text-green-400 mb-3">
-                        Analysis Complete! 🎉
+                        AI Analysis Complete! 🤖
                       </h3>
                       <p className="text-muted-foreground text-lg">
-                        Your detailed build plan is ready with materials and cost estimates
+                        Your furniture has been analyzed by our multi-agent AI system
                       </p>
                     </div>
                   </div>
@@ -232,12 +193,9 @@ const Index = () => {
                     variant="outline" 
                     size="lg"
                     className="w-full py-6 text-lg hover:scale-105 transition-all duration-300 bg-background/80 backdrop-blur-sm border-primary/30 hover:border-primary/60 shadow-glow"
-                    onClick={() => {
-                      setCurrentDesign(null)
-                      setAnalysisData(null)
-                    }}
+                    onClick={resetAnalysis}
                   >
-                    Analyze Another Design ✨
+                    Analyze Another Design 🚀
                   </Button>
                 </div>
               )}
@@ -246,14 +204,11 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Analysis Results Section */}
-      {analysisData && (
+      {/* Flowise Analysis Results Section */}
+      {flowiseResult && (
         <div className="py-24 bg-card/30">
           <div className="max-w-6xl mx-auto px-4">
-            <AnalysisResults 
-              analysis={analysisData.analysis} 
-              materials={analysisData.materials}
-            />
+            <FlowiseAnalysisResults response={flowiseResult} />
           </div>
         </div>
       )}

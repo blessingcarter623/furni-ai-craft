@@ -114,7 +114,7 @@ export const useFurnitureAnalysis = () => {
       // Use frontend analysis instead of edge function
       const analysisData = await analyzeFurnitureImage(imageUrl, title, description);
       
-      // Save analysis results
+      // Save analysis results - fix the type issue
       const { data: analysisResult, error: analysisError } = await supabase
         .from('analysis_results')
         .insert({
@@ -125,7 +125,7 @@ export const useFurnitureAnalysis = () => {
           difficulty_level: analysisData.difficulty_level,
           estimated_time_hours: analysisData.estimated_time_hours,
           style_category: analysisData.style_category,
-          raw_ai_response: analysisData
+          raw_ai_response: analysisData as any // Cast to any to match Json type
         })
         .select()
         .single();
