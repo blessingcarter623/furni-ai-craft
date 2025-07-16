@@ -7,14 +7,14 @@ export const analyzeWithFlowise = async (
   question: string = "Analyze this furniture piece and identify all components with materials and sourcing information"
 ): Promise<FlowiseApiResponse> => {
   try {
-    // Convert image to base64
+    // Convert image to base64 with proper data URL format
     const base64Image = await fileToBase64(imageFile);
     
     const requestBody: FlowiseApiRequest = {
       question,
       uploads: [
         {
-          data: base64Image,
+          data: `data:${imageFile.type};base64,${base64Image}`,
           type: imageFile.type,
           name: imageFile.name
         }
@@ -26,7 +26,8 @@ export const analyzeWithFlowise = async (
       question,
       hasImage: !!base64Image,
       imageType: imageFile.type,
-      imageSize: imageFile.size
+      imageSize: imageFile.size,
+      dataUrlPrefix: `data:${imageFile.type};base64,`.length
     });
 
     // Call our edge function instead of the Flowise API directly
@@ -57,9 +58,9 @@ const fileToBase64 = (file: File): Promise<string> => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => {
-      const base64String = reader.result as string;
-      // Remove the data URL prefix (data:image/jpeg;base64,)
-      const base64Data = base64String.split(',')[1];
+      const result = reader.result as string;
+      // Extract just the base64 part (remove the data URL prefix)
+      const base64Data = result.split(',')[1];
       resolve(base64Data);
     };
     reader.onerror = (error) => reject(error);

@@ -25,13 +25,35 @@ serve(async (req) => {
       uploadsCount: uploads?.length || 0
     });
 
+    // Validate that we have the required data
+    if (!question) {
+      throw new Error('Question is required');
+    }
+
+    if (!uploads || !Array.isArray(uploads) || uploads.length === 0) {
+      throw new Error('At least one upload is required');
+    }
+
+    // Validate upload format
+    for (const upload of uploads) {
+      if (!upload.data || !upload.type || !upload.name) {
+        throw new Error('Each upload must have data, type, and name properties');
+      }
+      
+      // Ensure the data starts with data: prefix for Flowise
+      if (!upload.data.startsWith('data:')) {
+        console.log('Adding data URL prefix to upload');
+        upload.data = `data:${upload.type};base64,${upload.data}`;
+      }
+    }
+
     const requestBody = {
       question,
-      ...(uploads && uploads.length > 0 && { uploads }),
+      uploads,
       streaming: false
     };
 
-    console.log('Sending request to Flowise API...');
+    console.log('Sending request to Flowise API with validated data...');
 
     const response = await fetch(FLOWISE_API_URL, {
       method: 'POST',
