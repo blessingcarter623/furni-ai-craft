@@ -1,7 +1,6 @@
 
 import { FlowiseApiRequest, FlowiseApiResponse } from '@/types/flowise';
-
-const FLOWISE_API_URL = 'https://flowiseai-railway-production-21f8.up.railway.app/api/v1/prediction/fcea3e5f-a33a-423a-ad88-dcd5a5b1e8b9';
+import { supabase } from '@/integrations/supabase/client';
 
 export const analyzeWithFlowise = async (
   imageFile: File,
@@ -23,38 +22,32 @@ export const analyzeWithFlowise = async (
       streaming: false
     };
 
-    console.log('Sending request to Flowise:', {
-      url: FLOWISE_API_URL,
+    console.log('Sending request to Flowise via edge function:', {
       question,
       hasImage: !!base64Image,
       imageType: imageFile.type,
       imageSize: imageFile.size
     });
 
-    const response = await fetch(FLOWISE_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
+    // Call our edge function instead of the Flowise API directly
+    const { data, error } = await supabase.functions.invoke('flowise-analysis', {
+      body: requestBody,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Flowise API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorText
-      });
-      throw new Error(`Flowise API error: ${response.status} - ${errorText}`);
+    if (error) {
+      console.error('Edge function error:', error);
+      throw new Error(`Edge function error: ${error.message}`);
     }
 
-    const data = await response.json();
-    console.log('Flowise API response:', data);
+    if (!data) {
+      throw new Error('No data received from edge function');
+    }
+
+    console.log('Flowise analysis completed successfully:', data);
     
     return data;
   } catch (error) {
-    console.error('Error calling Flowise API:', error);
+    console.error('Error calling Flowise via edge function:', error);
     throw error;
   }
 };
