@@ -1,6 +1,7 @@
 
 import { FlowiseApiRequest, FlowiseApiResponse } from '@/types/flowise';
-import { supabase } from '@/integrations/supabase/client';
+
+const FLOWISE_API_URL = 'https://cloud.flowiseai.com/api/v1/prediction/44f170a7-a7d7-4fce-ab70-eb99336ea53b';
 
 export const analyzeWithFlowise = async (
   imageFile: File,
@@ -22,33 +23,40 @@ export const analyzeWithFlowise = async (
       streaming: false
     };
 
-    console.log('Sending request to Flowise via edge function:', {
-      question,
+    console.log('Sending request directly to Flowise API:', {
+      question: question.substring(0, 100) + '...',
       hasImage: !!base64Image,
       imageType: imageFile.type,
-      imageSize: imageFile.size,
-      dataUrlPrefix: `data:${imageFile.type};base64,`.length
+      imageSize: imageFile.size
     });
 
-    // Call our edge function instead of the Flowise API directly
-    const { data, error } = await supabase.functions.invoke('flowise-analysis', {
-      body: requestBody,
+    // Call Flowise API directly from frontend
+    const response = await fetch(FLOWISE_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
     });
 
-    if (error) {
-      console.error('Edge function error:', error);
-      throw new Error(`Edge function error: ${error.message}`);
+    console.log('Flowise API response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Flowise API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      throw new Error(`Flowise API error: ${response.status} - ${errorText}`);
     }
 
-    if (!data) {
-      throw new Error('No data received from edge function');
-    }
-
+    const data = await response.json();
     console.log('Flowise analysis completed successfully:', data);
     
     return data;
   } catch (error) {
-    console.error('Error calling Flowise via edge function:', error);
+    console.error('Error calling Flowise API directly:', error);
     throw error;
   }
 };

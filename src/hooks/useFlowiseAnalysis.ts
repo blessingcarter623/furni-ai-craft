@@ -28,11 +28,20 @@ export const useFlowiseAnalysis = () => {
     } catch (error) {
       console.error('Flowise analysis error:', error);
       
-      toast({
-        title: "Analysis failed",
-        description: error instanceof Error ? error.message : "Failed to analyze with Flowise",
-        variant: "destructive",
-      });
+      // Check if it's a CORS error
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        toast({
+          title: "CORS Error",
+          description: "Unable to call Flowise API directly due to CORS policy. Consider using a proxy server.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Analysis failed",
+          description: error instanceof Error ? error.message : "Failed to analyze with Flowise",
+          variant: "destructive",
+        });
+      }
       
       throw error;
     } finally {
